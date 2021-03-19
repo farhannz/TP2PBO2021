@@ -10,9 +10,12 @@ import java.io.IOException;
 import java.awt.Graphics2D;
 import java.sql.Connection;
 import java.sql.DriverManager;
-import java.sql.PreparedStatement;
+import java.sql.Statement;
 import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import javax.swing.table.DefaultTableCellRenderer;
 /**
  *
  * @author Asus
@@ -35,8 +38,15 @@ public class Menu extends javax.swing.JFrame {
     private javax.swing.JLabel nim;
     private javax.swing.JLabel picture;
     private BufferedImage myPicture;
+    private javax.swing.JTable tabelData;
+    private String header[] = new String[]{"No", "Merk", "Plat", "Warna","Jenis"};
+    private javax.swing.table.DefaultTableModel tabel;
+    private javax.swing.JScrollPane scrollPanel;
+    private ArrayList<Mobil> listMobil;
     public Menu() {
         initComponents();
+        listMobil = new ArrayList<Mobil>();
+        // Dibikin manual biar bisa ditumpuk
         
         initPanelForm();
         initPanelInfo();
@@ -45,6 +55,7 @@ public class Menu extends javax.swing.JFrame {
         switchForm(true);
         switchInfo(false);
         switchTable(false);
+        layeredPanel.add(scrollPanel);
         this.add(layeredPanel);
         this.setLayout(null);
         this.setLocationRelativeTo(null);
@@ -289,7 +300,62 @@ public class Menu extends javax.swing.JFrame {
         layeredPanel.add(nim);
     }
     public void initPanelTable(){
-        
+        tabel = new javax.swing.table.DefaultTableModel(header,0);
+        tabelData = new javax.swing.JTable(tabel);
+        tabelData.setModel(tabel);
+        tabelData.setBounds(5,0,380,400);
+//        DefaultTableCellRenderer center = new DefaultTableCellRenderer();
+//        center.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+//        tabelData.setDefaultRenderer(String.class, center);
+        scrollPanel = new javax.swing.JScrollPane(tabelData);
+        scrollPanel.setBounds(5,0,380,400);
+    }
+    public void ambilData(){
+        String host = "jdbc:mysql://localhost:3306/tp2Mobil?useTimezone=true&serverTimezone=UTC";
+        String username ="root";
+        String pass = "";
+        String query = "SELECT * from mobil";
+        try{
+            Connection con = DriverManager.getConnection(host,username,pass);
+            Statement statement = con.createStatement();
+            ResultSet result = statement.executeQuery(query);
+           
+            ResultSetMetaData rsmd = result.getMetaData();
+            int column = rsmd.getColumnCount();
+            tabel.setRowCount(0);
+            while(result.next()){
+                tabel.setRowCount(0);
+                String tampil = "";
+                String[] dataKolom = new String[4];
+                //| 0  | 1  |  2  |  3  |
+                //|Merk|Plat|Warna|Jenis|
+                for(int i = 2; i<=column;++i){
+                    dataKolom[i-2] = result.getString(i);
+                }
+                listMobil.add(new Mobil(dataKolom[0],dataKolom[1],dataKolom[2],dataKolom[3]));
+//                System.out.println(dataKolom[0]);
+//                System.out.println(dataKolom[1]);
+//                System.out.println(dataKolom[2]);
+//                System.out.println(dataKolom[3]);
+            }
+            for(int i = 0;i<listMobil.size();++i){
+                Object[] objs  = {
+                    i+1,
+                    listMobil.get(i).getMerk(),
+                    listMobil.get(i).getPlat(),
+                    listMobil.get(i).getWarna(),
+                    listMobil.get(i).getJenis()
+                };
+                tabel.addRow(objs);
+            }
+            scrollPanel.setBounds(5,160,380,400);
+            add(scrollPanel);
+            listMobil.clear();
+        }
+        catch(SQLException e){
+            //
+            e.printStackTrace();
+        }
     }
     public void switchForm(boolean value){
         labelMerk.setVisible(value);
@@ -304,6 +370,8 @@ public class Menu extends javax.swing.JFrame {
         Submit.setVisible(value);
     }
     public void switchTable(boolean value){
+        ambilData();
+        scrollPanel.setVisible(value);
     }
     public void switchInfo(boolean value){
         nama.setVisible(value);
@@ -379,7 +447,37 @@ public class Menu extends javax.swing.JFrame {
 
     private void SubmitActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_SubmitActionPerformed
         // TODO add your handling code here:
-        infoBox("Berhasil","Message");
+        String Merk = textMerk.getText();
+        String Plat = textPlat.getText();
+        String Warna = textWarna.getText();
+        String Jenis = (String)boxJenis.getSelectedItem();
+        String host = "jdbc:mysql://localhost:3306/tp2mobil?useTimezone=true&serverTimezone=UTC";
+        String username ="root";
+        String pass = "";
+        String query = "";
+        if(Merk != "" && Plat != "" && Warna != "" && Jenis != ""){
+            query = "INSERT INTO mobil(merk,plat,warna,jenis) value(";
+            query += '"' + Merk+ '"' +",";
+            query += '"' + Plat  + '"'  +",";
+            query += '"' + Warna + '"' +",";
+            query += '"' + Jenis + '"' +")";
+            System.out.println(query);            
+            try{
+                Connection con = DriverManager.getConnection(host,username,pass);
+                Statement statement = con.createStatement();
+                int result = statement.executeUpdate(query);
+                infoBox("Berhasil memasukkan data","Message");
+
+            }
+            catch(SQLException e){
+                //
+                infoBox("Gagal memasukkan data","Message");
+                e.printStackTrace();
+            }
+        }
+        else{
+            infoBox("Data tidak boleh ada yang kosong!", "Alert");
+        }
     }//GEN-LAST:event_SubmitActionPerformed
 
     /**
