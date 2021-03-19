@@ -20,6 +20,10 @@ import javax.swing.table.DefaultTableCellRenderer;
  *
  * @author Asus
  */
+
+//Saya Farhan Nurzaman mengerjakan TP2PBO dalam mata kuliah DPBO untuk
+//keberkahan-Nya, maka saya tidak melakukan kecurangan seperti yang telah
+//dispesifikasikan. Aamiin.
 public class Menu extends javax.swing.JFrame {
 
     /**
