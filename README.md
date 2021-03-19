@@ -8,9 +8,9 @@ Farhan Nurzaman
 
 <pre>
 o Simple form design ✓
-o MySQL Connection X
-o Add data to database x
-o Display data x
+o MySQL Connection ✓
+o Add data to database ✓
+o Display data ✓
 </pre>
 
 
